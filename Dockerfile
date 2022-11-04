@@ -2,7 +2,7 @@ FROM golang:1.18
 WORKDIR /go/src/github.com/egeneralov/minio-public-ui/
 ARG GOPROXY
 ADD . .
-RUN go build -v -ldflags "-v -linkmode auto -extldflags \"-static\"" -o /go/bin/minio-public-ui github.com/egeneralov/minio-public-ui/cmd/minio-public-ui
+RUN go build -v -ldflags "-v -linkmode auto -extldflags \"-static\"" -o /go/bin/minio-public-ui cmd/minio-public-ui/*.go
 
 FROM debian:bullseye
 RUN apt-get update -q && apt-get install -yq ca-certificates --no-install-recommends
