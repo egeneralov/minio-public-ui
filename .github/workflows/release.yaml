@@ -57,8 +57,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64
-          #,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7
           cache-to: ghcr.io/${{ github.repository }}/minio-public-ui:cache
           cache-from: ghcr.io/${{ github.repository }}/minio-public-ui:cache
           network: host
