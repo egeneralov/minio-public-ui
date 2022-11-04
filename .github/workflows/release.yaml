@@ -41,7 +41,7 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: |
-            ghcr.io/${{ github.repository }}/go-ipam
+            ghcr.io/${{ github.repository }}/minio-public-ui
           tags: |
             type=schedule
             type=ref,event=branch
@@ -58,8 +58,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7
-          cache-to: ghcr.io/${{ github.repository }}/go-ipam:cache
-          cache-from: ghcr.io/${{ github.repository }}/go-ipam:cache
+          cache-to: ghcr.io/${{ github.repository }}/minio-public-ui:cache
+          cache-from: ghcr.io/${{ github.repository }}/minio-public-ui:cache
           network: host
 
       - name: Get tag
@@ -79,7 +79,7 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            ghcr.io/${{ github.repository }}/go-ipam:${{ steps.tag.outputs.tag }}
+            ghcr.io/${{ github.repository }}/minio-public-ui:${{ steps.tag.outputs.tag }}
 
       - name: save minio-public-ui-amd64 artifact in Actions
         uses: actions/upload-artifact@v1.0.0
