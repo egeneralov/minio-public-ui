@@ -1,0 +1,5 @@
+.git*
+.docker*
+Dockerfile
+.idea
+.go*
