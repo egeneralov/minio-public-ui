@@ -9,10 +9,10 @@ import (
   "io/ioutil"
   "net"
   "net/http"
+  "net/url"
   "time"
 )
 
-//-url "https://s3-a4.generalov.org/android?max-keys=1000" -eTag -lastModified -ownerDisplayName -size -storageClass
 var (
   lastModified     = flag.Bool("lastModified", false, "show lastModified")
   eTag             = flag.Bool("eTag", false, "show eTag")
@@ -20,13 +20,17 @@ var (
   ownerDisplayName = flag.Bool("ownerDisplayName", false, "show ownerDisplayName")
   storageClass     = flag.Bool("storageClass", false, "show storageClass")
   insecure         = flag.Bool("insecure", false, "skip TLS verification")
-  url              = flag.String("url", "http://localhost:9000/minio-public-ui/?&max-keys=1000", "url")
+  path             = flag.String("path", "/ui/", "path")
+  baseurl          = flag.String("url", "http://localhost:9000", "baseurl")
+  opts             = flag.String("opts", "max-keys=1000", "opts")
+  bucket           = flag.String("bucket", "public", "bucket")
   title            = flag.String("title", "Minio Public UI", "title")
   bind             = flag.String("bind", "0.0.0.0:8080", "bind")
   customCSS        = flag.String("custom-css-file", "", "path to custom css file")
 )
 
-var heading = `
+var (
+  heading = `
 <style>
 table {
   font-family: helvetica;
@@ -39,27 +43,37 @@ table {
 }
 </style>
 `
+  rURL = &url.URL{}
+)
 
 func init() {
   flag.Parse()
-  if *customCSS == "" {
-    return
+  if *customCSS != "" {
+    css, err := ioutil.ReadFile(*customCSS)
+    if err != nil {
+      panic(err)
+    }
+    heading = fmt.Sprintf("<style>%s</style>", css)
   }
-  css, err := ioutil.ReadFile(*customCSS)
+  var err error
+  rURL, err = url.Parse(*baseurl)
   if err != nil {
     panic(err)
   }
-  heading = fmt.Sprintf("<style>%s</style>", css)
+  rURL.Path = fmt.Sprintf("/%s", *bucket)
+  rURL.RawQuery = *opts
+  fmt.Println(rURL.String())
 }
 
 func main() {
-  http.HandleFunc("/", handler)
+  http.HandleFunc(*path, htmlHandler)
   http.ListenAndServe(*bind, nil)
 }
 
-func handler(w http.ResponseWriter, req *http.Request) {
+func htmlHandler(w http.ResponseWriter, req *http.Request) {
   w.Header().Set("Content-Type", "text/html")
-  w.Write([]byte(render(*title, *url)))
+  fmt.Println(rURL)
+  w.Write([]byte(render(*title, rURL.String())))
 }
 
 func render(title, url string) string {
@@ -98,7 +112,7 @@ func renderBodyWithResult(r ListBucketResult) string {
   result += "</thead><tbody>"
   for _, el := range r.Contents {
     var element string
-    element = fmt.Sprintf("\n<tr>\n\t<td><a href=\"%s\">%s</a></td>", el.Key, el.Key)
+    element = fmt.Sprintf("\n<tr>\n\t<td><a href=\"/%s/%s\">%s</a></td>", *bucket, el.Key, el.Key)
     if *lastModified {
       element += fmt.Sprintf("\n\t<td>%s</td>", el.LastModified.Format(time.RFC3339))
     }
